@@ -1,0 +1,220 @@
+/* App.css - Additional styles for specific components */
+
+/* Graph view specific styles */
+.graph-node {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.graph-node:hover {
+  filter: brightness(1.2);
+}
+
+.graph-link {
+  stroke-opacity: 0.6;
+  transition: stroke-opacity 0.3s ease;
+}
+
+.graph-link:hover {
+  stroke-opacity: 1;
+}
+
+/* Note editor specific styles */
+.note-editor textarea {
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+.note-editor textarea:focus {
+  outline: none;
+}
+
+/* Markdown preview styles */
+.markdown-preview {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.markdown-preview code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.markdown-preview pre code {
+  font-size: 0.875rem;
+}
+
+/* Sidebar specific styles */
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
+
+/* Search modal animations */
+.search-modal-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.search-modal-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.2s ease-out;
+}
+
+.search-modal-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.search-modal-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.2s ease-in;
+}
+
+/* Reminder panel animations */
+.reminder-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reminder-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Auth modal background */
+.auth-modal-bg {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+}
+
+/* Custom button styles */
+.btn-primary {
+  @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-obsidian-800;
+}
+
+.btn-secondary {
+  @apply bg-obsidian-200 dark:bg-obsidian-700 hover:bg-obsidian-300 dark:hover:bg-obsidian-600 text-obsidian-800 dark:text-obsidian-200 font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-obsidian-500 focus:ring-offset-2 dark:focus:ring-offset-obsidian-800;
+}
+
+.btn-ghost {
+  @apply text-obsidian-600 dark:text-obsidian-400 hover:text-obsidian-800 dark:hover:text-obsidian-200 hover:bg-obsidian-100 dark:hover:bg-obsidian-800 font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-obsidian-500 focus:ring-offset-2 dark:focus:ring-offset-obsidian-900;
+}
+
+.btn-danger {
+  @apply bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-obsidian-800;
+}
+
+/* Form input styles */
+.form-input {
+  @apply w-full px-3 py-2 border border-obsidian-300 dark:border-obsidian-600 rounded-lg bg-white dark:bg-obsidian-700 text-obsidian-900 dark:text-obsidian-100 placeholder-obsidian-500 dark:placeholder-obsidian-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-obsidian-700 dark:text-obsidian-300 mb-2;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white dark:bg-obsidian-800 border border-obsidian-200 dark:border-obsidian-700 rounded-lg shadow-sm;
+}
+
+.card-header {
+  @apply px-6 py-4 border-b border-obsidian-200 dark:border-obsidian-700;
+}
+
+.card-body {
+  @apply px-6 py-4;
+}
+
+.card-footer {
+  @apply px-6 py-4 border-t border-obsidian-200 dark:border-obsidian-700 bg-obsidian-50 dark:bg-obsidian-800/50;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+  @apply bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200;
+}
+
+.badge-secondary {
+  @apply bg-obsidian-100 dark:bg-obsidian-800 text-obsidian-800 dark:text-obsidian-200;
+}
+
+.badge-success {
+  @apply bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200;
+}
+
+.badge-danger {
+  @apply bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200;
+}
+
+/* Divider styles */
+.divider {
+  @apply border-t border-obsidian-200 dark:border-obsidian-700;
+}
+
+.divider-vertical {
+  @apply border-l border-obsidian-200 dark:border-obsidian-700;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+}
+
+.spinner-lg {
+  @apply w-8 h-8 border-4;
+}
+
+/* Utility classes for consistent spacing */
+.space-y-6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.space-y-8 > * + * {
+  margin-top: 2rem;
+}
+
+/* Dark mode transitions */
+* {
+  transition-property: color, background-color, border-color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}
