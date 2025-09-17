@@ -1,12 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import toast from 'react-hot-toast';
 import { Bell, Clock, CheckCircle, X } from 'lucide-react';
 
 const NotificationContext = createContext();
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
@@ -73,60 +70,72 @@ const ReminderNotification = ({ notification, onClose, onMarkRead, onSnooze }) =
 );
 
 export const NotificationProvider = ({ children, user }) => {
-  const [client, setClient] = useState(null);
   const [connected, setConnected] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
+  // Simulate connection for demo purposes
   useEffect(() => {
     if (user && user.id) {
-      connectToNotifications(user.id);
-    }
-
-    return () => {
-      if (client) {
-        client.deactivate();
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const connectToNotifications = () => {
-    const socket = new SockJS(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/ws-notifications`);
-    const stompClient = new Client({
-      webSocketFactory: () => socket,
-      debug: (str) => {
-        console.log('STOMP: ' + str);
-      },
-      onConnect: (frame) => {
-        console.log('Connected to notification server:', frame);
+      // Simulate connection
+      setTimeout(() => {
         setConnected(true);
-        
-        // Subscribe to user-specific notifications
-
-        // Show connection success
-        toast.success('Connected to notification server', {
+        toast.success('Notification system ready', {
           duration: 2000,
           icon: '🔔'
         });
-      },
-      onDisconnect: () => {
-        console.log('Disconnected from notification server');
-        setConnected(false);
-        toast.error('Disconnected from notifications');
-      },
-      onStompError: (frame) => {
-        console.error('STOMP error:', frame);
-        setConnected(false);
-        toast.error('Notification connection failed');
-      },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-    });
+      }, 1000);
+    }
 
-    stompClient.activate();
-    setClient(stompClient);
-  };
+    return () => {
+      setConnected(false);
+    };
+  }, [user]);
+
+  // Check for pending reminders periodically
+  useEffect(() => {
+    if (!connected) return;
+
+    const checkReminders = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/reminders/pending`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const pendingReminders = await response.json();
+          
+          // Show notifications for overdue reminders
+          pendingReminders.forEach(reminder => {
+            const now = new Date();
+            const reminderTime = new Date(reminder.reminderTime);
+            
+            if (reminderTime <= now && !reminder.isSent) {
+              handleNotification({
+                id: reminder.reminderId,
+                type: 'reminder',
+                title: 'Reminder Due',
+                message: reminder.message,
+                noteTitle: reminder.note?.title,
+                reminderTime: reminderTime.toLocaleString(),
+                timestamp: Date.now()
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to check pending reminders:', error);
+      }
+    };
+
+    // Check immediately and then every 5 minutes
+    checkReminders();
+    const interval = setInterval(checkReminders, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [connected]);
 
   const handleNotification = (notification) => {
     console.log('Received notification:', notification);
@@ -250,8 +259,8 @@ export const NotificationProvider = ({ children, user }) => {
 
   const triggerPendingReminders = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/notifications/trigger-pending`, {
-        method: 'POST',
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/reminders/pending`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -259,13 +268,32 @@ export const NotificationProvider = ({ children, user }) => {
       });
 
       if (response.ok) {
-        toast.success('Checking for pending reminders...');
+        const pendingReminders = await response.json();
+        toast.success(`Found ${pendingReminders.length} pending reminders`);
+        
+        // Process any overdue reminders
+        pendingReminders.forEach(reminder => {
+          const now = new Date();
+          const reminderTime = new Date(reminder.reminderTime);
+          
+          if (reminderTime <= now && !reminder.isSent) {
+            handleNotification({
+              id: reminder.reminderId,
+              type: 'reminder',
+              title: 'Overdue Reminder',
+              message: reminder.message,
+              noteTitle: reminder.note?.title,
+              reminderTime: reminderTime.toLocaleString(),
+              timestamp: Date.now()
+            });
+          }
+        });
       } else {
-        toast.error('Failed to trigger pending reminders');
+        toast.error('Failed to check pending reminders');
       }
     } catch (error) {
-      console.error('Error triggering pending reminders:', error);
-      toast.error('Failed to trigger pending reminders');
+      console.error('Error checking pending reminders:', error);
+      toast.error('Failed to check pending reminders');
     }
   };
 

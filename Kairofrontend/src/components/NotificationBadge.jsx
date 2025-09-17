@@ -12,7 +12,9 @@ const NotificationBadge = () => {
   } = useNotifications();
   
   const [showDropdown, setShowDropdown] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [notificationPermission, setNotificationPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+  );
 
   const handleRequestPermission = async () => {
     const permission = await requestNotificationPermission();
@@ -78,14 +80,14 @@ const NotificationBadge = () => {
                   ) : (
                     <div className="flex items-center text-red-600 text-xs">
                       <WifiOff className="w-3 h-3 mr-1" />
-                      Disconnected
+                      Offline Mode
                     </div>
                   )}
                 </div>
               </div>
               
               {/* Browser Notification Permission */}
-              {notificationPermission === 'default' && (
+              {typeof Notification !== 'undefined' && notificationPermission === 'default' && (
                 <button
                   onClick={handleRequestPermission}
                   className="mt-2 w-full text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded"
@@ -94,7 +96,7 @@ const NotificationBadge = () => {
                 </button>
               )}
               
-              {notificationPermission === 'denied' && (
+              {typeof Notification !== 'undefined' && notificationPermission === 'denied' && (
                 <div className="mt-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded">
                   Browser notifications blocked. Enable in browser settings.
                 </div>
