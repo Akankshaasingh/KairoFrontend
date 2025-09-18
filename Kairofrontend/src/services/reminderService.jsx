@@ -1,12 +1,17 @@
-/* eslint-disable no-unused-vars */
-import axios from 'axios';
+import api, { API_CONFIG } from './apiconfig';
+import { authService } from './authService';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+export class ReminderService {
+  async _ensureAuth() {
+    if (!authService.isAuthenticated()) {
+      throw new Error('User not authenticated');
+    }
+  }
 
-class ReminderService {
   async getAllReminders() {
+    await this._ensureAuth();
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/reminders`);
+      const response = await api.get(API_CONFIG.endpoints.reminders.getAll);
       return response.data;
     } catch (error) {
       throw new Error('Failed to fetch reminders');
@@ -14,8 +19,9 @@ class ReminderService {
   }
 
   async getReminderById(id) {
+    await this._ensureAuth();
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/reminders/${id}`);
+      const response = await api.get(API_CONFIG.endpoints.reminders.getById(id));
       return response.data;
     } catch (error) {
       throw new Error('Failed to fetch reminder');
@@ -23,8 +29,9 @@ class ReminderService {
   }
 
   async createReminder(reminderData) {
+    await this._ensureAuth();
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/reminders`, reminderData);
+      const response = await api.post(API_CONFIG.endpoints.reminders.create, reminderData);
       return response.data;
     } catch (error) {
       throw new Error('Failed to create reminder');
@@ -32,8 +39,9 @@ class ReminderService {
   }
 
   async updateReminder(id, reminderData) {
+    await this._ensureAuth();
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/reminders/${id}`, reminderData);
+      const response = await api.put(API_CONFIG.endpoints.reminders.update(id), reminderData);
       return response.data;
     } catch (error) {
       throw new Error('Failed to update reminder');
@@ -41,16 +49,18 @@ class ReminderService {
   }
 
   async deleteReminder(id) {
+    await this._ensureAuth();
     try {
-      await axios.delete(`${API_BASE_URL}/api/reminders/${id}`);
+      await api.delete(API_CONFIG.endpoints.reminders.delete(id));
     } catch (error) {
       throw new Error('Failed to delete reminder');
     }
   }
 
   async getPendingReminders() {
+    await this._ensureAuth();
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/reminders/pending`);
+      const response = await api.get(`${API_CONFIG.endpoints.reminders.base}/pending`);
       return response.data;
     } catch (error) {
       throw new Error('Failed to fetch pending reminders');
@@ -58,8 +68,9 @@ class ReminderService {
   }
 
   async markReminderAsSent(id) {
+    await this._ensureAuth();
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/reminders/${id}/mark-sent`);
+      const response = await api.post(`${API_CONFIG.endpoints.reminders.base}/${id}/mark-sent`);
       return response.data;
     } catch (error) {
       throw new Error('Failed to mark reminder as sent');

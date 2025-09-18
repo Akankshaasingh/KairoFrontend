@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 import Sidebar from './components/Sidebar';
 import NoteEditor from './components/NoteEditor';
 import GraphView from './components/GraphView';
@@ -9,14 +9,12 @@ import ReminderPanel from './components/ReminderPanel';
 import SearchModal from './components/SearchModal';
 import { NotificationProvider } from './components/NotificationProvider';
 import NotificationBadge from './components/NotificationBadge';
-import { authService } from './services/authService';
-import { noteService } from './services/noteService';
-import { reminderService } from './services/reminderService';
+import { authService, noteService, reminderService } from './services';
 import './App.css';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const [user, setUser] = useState(authService.getCurrentUser());
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [reminders, setReminders] = useState([]);
@@ -35,12 +33,52 @@ function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
   useEffect(() => {
+    const loadData = async () => {
+      if (isAuthenticated) {
+        try {
+          const [notesData, remindersData] = await Promise.all([
+            noteService.getAllNotes(),
+            reminderService.getPendingReminders()
+          ]);
+          setNotes(notesData);
+          setReminders(remindersData);
+        } catch (error) {
+          console.error('Error loading data:', error);
+          toast.error('Failed to load data');
+        }
+      }
+    };
+    loadData();
+  }, [isAuthenticated]);
+
+  // Ensure initialization runs on first mount (clears initial loading spinner)
+  useEffect(() => {
     initializeApp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadUserData();
+    }
+  }, [isAuthenticated]);
+
+  const loadUserData = async () => {
+    try {
+      const [notesData, remindersData] = await Promise.all([
+        noteService.getAllNotes(),
+        reminderService.getPendingReminders()
+      ]);
+      setNotes(notesData);
+      setReminders(remindersData);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      toast.error('Failed to load data');
+    }
+  };
 
   const initializeApp = async () => {
     try {
@@ -82,18 +120,17 @@ function App() {
     }
   };
 
-  const handleLogin = async (credentials) => {
+    const handleLogin = async (credentials) => {
     try {
-      const response = await authService.login(credentials);
-      localStorage.setItem('token', response.accessToken);
-      localStorage.setItem('user', JSON.stringify(response));
-      setUser(response);
+      const data = await authService.login(credentials);
+      setUser(data.user);
       setIsAuthenticated(true);
-      await loadNotes();
-      await loadReminders();
-      return { success: true };
+      toast.success('Welcome back!');
+      return data;
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Login failed:', error);
+      toast.error(error.message || 'Login failed');
+      throw error;
     }
   };
 
@@ -222,9 +259,12 @@ function App() {
 
   return (
     <Router>
-      {!isAuthenticated ? (
-        <AuthModal onLogin={handleLogin} onSignup={handleSignup} />
-      ) : (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        {!isAuthenticated ? (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+            <AuthModal onLogin={handleLogin} onSignup={handleSignup} />
+          </div>
+        ) : (
         <NotificationProvider user={user}>
           <div className="min-h-screen flex bg-obsidian-50 dark:bg-obsidian-900">
             <Sidebar
@@ -283,18 +323,17 @@ function App() {
             <Toaster 
               position="bottom-right"
               toastOptions={{
-                duration: 4000,
-                className: 'dark:bg-obsidian-800 dark:text-obsidian-100',
+                className: 'dark:bg-gray-800 dark:text-white',
                 style: {
                   background: darkMode ? '#1e293b' : '#ffffff',
                   color: darkMode ? '#f1f5f9' : '#0f172a',
-                  border: darkMode ? '1px solid #475569' : '1px solid #e2e8f0',
                 }
               }}
             />
           </div>
         </NotificationProvider>
-      )}
+        )}
+      </div>
     </Router>
   );
 }
